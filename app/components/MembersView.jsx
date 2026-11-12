@@ -1,146 +1,269 @@
 import React from 'react';
-import { Search, Filter, Plus, Edit, Trash2, AlertTriangle } from 'lucide-react';
-import { Tooltip } from "@/components/ui/tooltip"; 
+import {
+  Search,
+  SlidersHorizontal,
+  ChevronDown,
+  Plus,
+  Edit,
+  Trash2,
+  AlertTriangle,
+  Users,
+} from 'lucide-react';
 
-const MembersView = ({ 
-  filteredMembers, 
-  filterType, 
-  setFilterType, 
-  searchQuery,       // Receive Prop
-  setSearchQuery,    // Receive Prop
-  setShowModal, 
-  resetForm, 
-  setEditingMember, 
+const getAttendanceStyle = (days) => {
+  if (days >= 20) return 'border-volt/30 bg-volt/10 text-volt';
+  if (days >= 10) return 'border-info/30 bg-info/10 text-info';
+  return 'border-danger/30 bg-danger/10 text-danger';
+};
+
+const getTierStyle = (type) => {
+  if (type === 'Platinum')
+    return 'border-violet/30 bg-violet/10 text-violet';
+  if (type === 'Gold') return 'border-warn/30 bg-warn/10 text-warn';
+  return 'border-line-strong bg-surface-2 text-muted';
+};
+
+const getTierDot = (type) => {
+  if (type === 'Platinum') return 'bg-violet';
+  if (type === 'Gold') return 'bg-warn';
+  return 'bg-faint';
+};
+
+const initials = (name = '') =>
+  name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part.charAt(0))
+    .join('')
+    .toUpperCase() || '?';
+
+const MembersView = ({
+  filteredMembers,
+  filterType,
+  setFilterType,
+  searchQuery,
+  setSearchQuery,
+  setShowModal,
+  resetForm,
+  setEditingMember,
   serverError,
   handleEdit,
-  handleDelete
+  handleDelete,
 }) => {
-
-  const getAttendanceColor = (days) => {
-    if (days >= 20) return 'bg-emerald-100 text-emerald-700';
-    if (days >= 10) return 'bg-blue-100 text-blue-700';
-    return 'bg-red-100 text-red-700';
-  };
-
   return (
-    <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
-       
-       {/* Controls */}
-       <div className="flex flex-col md:flex-row justify-between gap-4 bg-white p-5 rounded-xl shadow-sm border border-slate-100  sticky z-50 top-2">
-         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full md:w-auto">
-           <div className="relative w-full sm:w-64">
-             <Search className="absolute left-3 top-2.5 text-slate-400 w-4 h-4" />
-             <input 
-               type="text" 
-               placeholder="Search members..." 
-               value={searchQuery} // Bind Value
-               onChange={(e) => setSearchQuery(e.target.value)} // Bind Event
-               className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all" 
-             />
-           </div>
-           <div className="flex items-center gap-2 w-full sm:w-auto">
-             <Filter className="w-4 h-4 text-slate-500" />
-             <select 
-               value={filterType} 
-               onChange={(e) => setFilterType(e.target.value)}
-               className="bg-slate-50 border border-slate-200 text-sm font-medium text-slate-700 py-2 pl-2 pr-8 rounded-lg outline-none cursor-pointer hover:bg-slate-100 transition-colors w-full sm:w-auto"
-             >
-               <option value="All">All Tiers</option>
-               <option value="Gold">Gold</option>
-               <option value="Silver">Silver</option>
-               <option value="Platinum">Platinum</option>
-             </select>
-           </div>
-         </div>
-         <button 
-           onClick={() => { resetForm(); setEditingMember(null); setShowModal(true); }}
-           disabled={!!serverError}
-           className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 shadow-sm shadow-emerald-200 transition-all hover:shadow-emerald-300 active:scale-95 whitespace-nowrap"
-         >
-           <Plus size={18} /> Add Member
-         </button>
-       </div>
+    <div className="animate-fade-up space-y-5">
+      {/* Controls */}
+      <div className="sticky top-2 z-30 flex flex-col gap-3 rounded-2xl border border-line bg-surface/90 p-4 shadow-lg shadow-black/20 backdrop-blur md:flex-row md:items-center md:justify-between">
+        <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center md:w-auto">
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-faint" />
+            <input
+              type="text"
+              placeholder="Search members…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full rounded-xl border border-line bg-base py-2.5 pl-9 pr-4 text-sm text-fg outline-none transition-all placeholder:text-faint focus:border-volt/60 focus:ring-2 focus:ring-volt/15"
+            />
+          </div>
 
-       {/* Table */}
-       <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-         <div className="overflow-x-auto">
-           <table className="w-full text-left border-collapse">
-             <thead className="bg-slate-50 border-b border-slate-100">
-               <tr>
-                 <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Member Name</th>
-                 <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Type</th>
-                 <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Attendance</th>
-                 <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Trainer</th>
-                 <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Fee</th>
-                 <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
-               </tr>
-             </thead>
-             <tbody className="divide-y divide-slate-100">
-               {filteredMembers.map(member => (
-                 <tr key={member.member_id} className="hover:bg-slate-50/80 transition-colors group">
-                   <td className="p-4 font-semibold text-slate-700">{member.member_name}</td>
-                   <td className="p-4">
-                     <span className={`px-2.5 py-1 rounded-full text-xs font-bold border inline-flex items-center gap-1
-                       ${member.membership_type === 'Platinum' ? 'bg-indigo-50 text-indigo-700 border-indigo-100' : 
-                         member.membership_type === 'Gold' ? 'bg-amber-50 text-amber-700 border-amber-100' : 
-                         'bg-slate-100 text-slate-600 border-slate-200'}`}>
-                       <div className={`w-1.5 h-1.5 rounded-full ${
-                         member.membership_type === 'Platinum' ? 'bg-indigo-500' : 
-                         member.membership_type === 'Gold' ? 'bg-amber-500' : 
-                         'bg-slate-400'
-                       }`}></div>
-                       {member.membership_type}
-                     </span>
-                   </td>
-                   <td className="p-4">
-                     <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 rounded text-xs font-bold border ${getAttendanceColor(member.attendance_days).replace('text', 'border-transparent text')}`}>
-                          {member.attendance_days} days
+          <div className="relative w-full sm:w-auto">
+            <SlidersHorizontal className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-faint" />
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              aria-label="Filter by membership tier"
+              className="w-full cursor-pointer appearance-none rounded-xl border border-line bg-base py-2.5 pl-9 pr-9 text-sm font-medium text-fg outline-none transition-colors hover:border-line-strong focus:border-volt/60 focus:ring-2 focus:ring-volt/15 sm:w-auto"
+            >
+              <option value="All">All Tiers</option>
+              <option value="Gold">Gold</option>
+              <option value="Silver">Silver</option>
+              <option value="Platinum">Platinum</option>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-faint" />
+          </div>
+        </div>
+
+        <button
+          onClick={() => {
+            resetForm();
+            setEditingMember(null);
+            setShowModal(true);
+          }}
+          disabled={!!serverError}
+          className="flex items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-volt px-5 py-2.5 text-sm font-bold text-ink shadow-[0_10px_28px_-12px_rgba(200,247,81,0.85)] transition-all hover:bg-[#d6ff6a] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <Plus size={18} strokeWidth={2.6} />
+          Add Member
+        </button>
+      </div>
+
+      {/* Table */}
+      <div className="overflow-hidden rounded-2xl border border-line bg-surface">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[820px] border-collapse text-left">
+            <thead className="bg-surface-2/60">
+              <tr>
+                {[
+                  'Member',
+                  'Tier',
+                  'Attendance',
+                  'Trainer',
+                  'Fee',
+                  'Actions',
+                ].map((heading) => (
+                  <th
+                    key={heading}
+                    className={`px-5 py-3.5 text-[10px] font-bold uppercase tracking-[0.16em] text-faint ${
+                      heading === 'Actions' ? 'text-right' : ''
+                    }`}
+                  >
+                    {heading}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filteredMembers.map((member) => (
+                <tr
+                  key={member.member_id}
+                  className="group border-t border-line/70 transition-colors hover:bg-surface-2/50"
+                >
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center gap-3">
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-line bg-surface-2 font-display text-xs font-semibold uppercase tracking-wide text-volt">
+                        {initials(member.member_name)}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-fg">
+                          {member.member_name}
+                        </p>
+                        <p className="truncate font-mono text-[10px] text-faint">
+                          ID {member.member_id}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td className="px-5 py-3.5">
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold ${getTierStyle(
+                        member.membership_type
+                      )}`}
+                    >
+                      <span
+                        className={`h-1.5 w-1.5 rounded-full ${getTierDot(
+                          member.membership_type
+                        )}`}
+                      />
+                      {member.membership_type}
+                    </span>
+                  </td>
+
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`rounded-lg border px-2 py-1 text-[11px] font-bold tabular-nums ${getAttendanceStyle(
+                          member.attendance_days
+                        )}`}
+                      >
+                        {member.attendance_days} days
+                      </span>
+                      {member.attendance_days < 5 && (
+                        <span
+                          title="Low attendance — churn risk"
+                          className="text-danger"
+                        >
+                          <AlertTriangle className="h-4 w-4 animate-pulse" />
                         </span>
-                        {member.attendance_days < 5 && (
-                          <Tooltip title="Low Attendance Risk">
-                            <AlertTriangle className="w-4 h-4 text-red-500 animate-pulse" />
-                          </Tooltip>
-                        )}
-                     </div>
-                   </td>
-                   <td className="p-4 text-slate-600 text-sm flex items-center gap-2">
-                     {member.trainer_assigned !== 'None' ? (
-                       <>
-                         <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500">
-                           {member.trainer_assigned.charAt(0)}
-                         </div>
-                         {member.trainer_assigned}
-                       </>
-                     ) : (
-                       <span className="text-slate-400 italic">No Trainer</span>
-                     )}
-                   </td>
-                   <td className="p-4 font-mono text-slate-700 font-medium">₱{member.monthly_fee}</td>
-                   <td className="p-4 text-right">
-                     <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                       <button onClick={() => handleEdit(member)} className="p-1.5 hover:bg-white border border-transparent hover:border-slate-200 hover:shadow-sm rounded-md text-slate-500 transition-all"><Edit size={16} /></button>
-                       <button onClick={() => handleDelete(member.member_id)} className="p-1.5 hover:bg-red-50 border border-transparent hover:border-red-100 rounded-md text-red-500 transition-all"><Trash2 size={16} /></button>
-                     </div>
-                   </td>
-                 </tr>
-               ))}
-             </tbody>
-           </table>
-         </div>
-         {filteredMembers.length === 0 && (
-           <div className="p-12 text-center text-slate-400 flex flex-col items-center">
-              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4 text-slate-300">
-                <Search size={32} />
-              </div>
-              <p>{serverError ? "Database connection error." : "No members found. Add one to get started!"}</p>
-              {!serverError && (
-                <button onClick={() => {resetForm(); setShowModal(true)}} className="text-emerald-600 font-medium text-sm mt-2 hover:underline">Add First Member</button>
-              )}
-           </div>
-         )}
-       </div>
-     </div>
+                      )}
+                    </div>
+                  </td>
+
+                  <td className="px-5 py-3.5">
+                    {member.trainer_assigned !== 'None' ? (
+                      <div className="flex items-center gap-2 text-sm text-muted">
+                        <span className="grid h-6 w-6 place-items-center rounded-full border border-line bg-surface-2 text-[10px] font-bold text-muted">
+                          {member.trainer_assigned.charAt(0)}
+                        </span>
+                        <span className="truncate">{member.trainer_assigned}</span>
+                      </div>
+                    ) : (
+                      <span className="text-xs italic text-faint">No trainer</span>
+                    )}
+                  </td>
+
+                  <td className="px-5 py-3.5">
+                    <span className="font-display text-base font-semibold tabular-nums text-fg">
+                      ₱{member.monthly_fee}
+                    </span>
+                  </td>
+
+                  <td className="px-5 py-3.5">
+                    <div className="flex justify-end gap-1.5 transition-opacity md:opacity-60 md:group-hover:opacity-100">
+                      <button
+                        onClick={() => handleEdit(member)}
+                        aria-label={`Edit ${member.member_name}`}
+                        className="grid h-8 w-8 place-items-center rounded-lg border border-line bg-surface-2 text-muted transition-colors hover:border-volt/30 hover:text-volt"
+                      >
+                        <Edit size={15} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(member.member_id)}
+                        aria-label={`Delete ${member.member_name}`}
+                        className="grid h-8 w-8 place-items-center rounded-lg border border-line bg-surface-2 text-faint transition-colors hover:border-danger/30 hover:bg-danger/10 hover:text-danger"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {filteredMembers.length === 0 && (
+          <div className="flex flex-col items-center px-6 py-16 text-center">
+            <div className="mb-4 grid h-16 w-16 place-items-center rounded-2xl border border-line bg-surface-2 text-faint">
+              {serverError ? <AlertTriangle size={28} /> : <Users size={28} />}
+            </div>
+            <p className="text-sm font-medium text-muted">
+              {serverError
+                ? 'Database connection error.'
+                : 'No members found. Add one to get started!'}
+            </p>
+            {!serverError && (
+              <button
+                onClick={() => {
+                  resetForm();
+                  setEditingMember(null);
+                  setShowModal(true);
+                }}
+                className="mt-3 text-sm font-bold text-volt hover:underline"
+              >
+                Add First Member
+              </button>
+            )}
+          </div>
+        )}
+
+        {filteredMembers.length > 0 && (
+          <div className="flex items-center justify-between border-t border-line bg-surface-2/40 px-5 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-faint">
+              Showing {filteredMembers.length} member
+              {filteredMembers.length === 1 ? '' : 's'}
+            </p>
+            <div className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-volt" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-faint">
+                Live roster
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

@@ -1,3 +1,131 @@
 @import "tailwindcss";
-/* @import "tw-animate-css"; */
 
+@theme {
+  /* Surfaces */
+  --color-ink: #070908;
+  --color-base: #0b0e0c;
+  --color-surface: #111513;
+  --color-surface-2: #171c19;
+  --color-line: #232b26;
+  --color-line-strong: #313b34;
+
+  /* Text */
+  --color-fg: #f2f6f1;
+  --color-muted: #a2afa7;
+  --color-faint: #849189;
+
+  /* Accents */
+  --color-volt: #c8f751;
+  --color-volt-dim: #a6d636;
+  --color-danger: #ff6b6b;
+  --color-warn: #ffb020;
+  --color-info: #6aa9ff;
+  --color-violet: #a78bfa;
+
+  /* Type */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-oswald), "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-base);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: var(--color-volt);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-volt);
+    outline-offset: 2px;
+  }
+}
+
+/* Subtle, themed scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2c352f transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2c352f;
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3c473f;
+  background-clip: content-box;
+}
+
+/* Motion */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes glowPulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease both;
+}
+
+.animate-glow {
+  animation: glowPulse 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-fade-in,
+  .animate-glow {
+    animation: none;
+  }
+}

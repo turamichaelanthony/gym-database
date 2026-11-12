@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { Info } from 'lucide-react';
 import { generatePredictiveData } from './utils/analytics';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -20,6 +21,7 @@ const App = () => {
 
   const [editingMember, setEditingMember] = useState(null);
   const [serverError, setServerError] = useState(null);
+  const [dataSource, setDataSource] = useState(null);
   
   // Data State
   const [predictiveData, setPredictiveData] = useState([]);
@@ -30,7 +32,7 @@ const App = () => {
     membership_type: 'Silver',
     attendance_days: 0,
     trainer_assigned: 'None',
-    monthly_fee: 60
+    monthly_fee: 1200
   });
 
   // --- API INTEGRATION ---
@@ -38,9 +40,11 @@ const App = () => {
     setLoading(true);
     setServerError(null);
     try {
-      const res = await fetch('/api/members');
+      const res = await fetch('/api/members', { cache: 'no-store' });
       if (!res.ok) throw new Error('Failed to connect to API');
       const data = await res.json();
+      const source = res.headers.get('x-data-source');
+      setDataSource(source === 'demo' ? 'demo' : 'database');
       setMembers(data);
     } catch (error) {
       console.error("API Error:", error);
@@ -144,7 +148,7 @@ const App = () => {
       membership_type: 'Silver',
       attendance_days: 0,
       trainer_assigned: 'None',
-      monthly_fee: 60
+      monthly_fee: 1200
     });
   };
 
@@ -274,12 +278,45 @@ const App = () => {
   });
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans text-slate-800">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} serverError={serverError} />
+    <div className="flex min-h-screen flex-col bg-base font-sans text-fg md:flex-row">
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        serverError={serverError}
+        dataSource={dataSource}
+      />
 
-      <main className="flex-1 h-screen overflow-y-auto bg-slate-50">
-        <div className="p-8 max-w-7xl mx-auto">
-          <Header activeTab={activeTab} loading={loading} membersCount={members.length} serverError={serverError} />
+      <main className="relative flex-1 md:h-screen md:overflow-y-auto">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-[radial-gradient(ellipse_at_top_right,rgba(200,247,81,0.07),transparent_62%)]"
+        />
+        <div className="relative mx-auto w-full max-w-[1440px] px-5 py-7 md:px-9 md:py-9">
+          <Header
+            activeTab={activeTab}
+            loading={loading}
+            membersCount={members.length}
+            serverError={serverError}
+            dataSource={dataSource}
+          />
+
+          {dataSource === 'demo' && (
+            <div className="mb-6 flex items-start gap-3 rounded-2xl border border-warn/25 bg-warn/[0.07] px-4 py-3">
+              <Info size={16} className="mt-0.5 shrink-0 text-warn" />
+              <p className="text-sm leading-relaxed text-muted">
+                <span className="font-semibold text-warn">Demo mode.</span>{' '}
+                Sample data is shown because{' '}
+                <code className="rounded bg-ink/60 px-1 py-0.5 font-mono text-[11px] text-fg">
+                  DATABASE_URL
+                </code>{' '}
+                is not configured. Add your Neon connection string to{' '}
+                <code className="rounded bg-ink/60 px-1 py-0.5 font-mono text-[11px] text-fg">
+                  .env
+                </code>{' '}
+                and restart to use live data.
+              </p>
+            </div>
+          )}
 
           {activeTab === 'dashboard' && (
             <DashboardView 
