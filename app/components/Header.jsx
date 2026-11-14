@@ -1,8 +1,29 @@
 import React from 'react';
 import { Database } from 'lucide-react';
 
+const HEADINGS = {
+  overview: {
+    kicker: 'System Guide',
+    title: 'System Overview',
+    description:
+      'How this gym console is put together and what each workspace does.',
+  },
+  dashboard: {
+    kicker: 'Performance Console',
+    title: 'Business Overview',
+    description:
+      'Welcome back, Administrator. Here is how your club is performing today.',
+  },
+  members: {
+    kicker: 'Member Directory',
+    title: 'Member Management',
+    description:
+      'Welcome back, Administrator. Manage your roster, plans and trainer assignments.',
+  },
+};
+
 const Header = ({ activeTab, loading, membersCount, serverError, dataSource }) => {
-  const isDashboard = activeTab === 'dashboard';
+  const heading = HEADINGS[activeTab] || HEADINGS.dashboard;
   const isDemo = dataSource === 'demo';
 
   return (
@@ -10,18 +31,15 @@ const Header = ({ activeTab, loading, membersCount, serverError, dataSource }) =
       <div>
         <div className="mb-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-volt">
           <span className="h-1.5 w-1.5 rounded-full bg-volt" />
-          {isDashboard ? 'Performance Console' : 'Member Directory'}
+          {heading.kicker}
         </div>
 
         <h2 className="font-display text-3xl font-semibold uppercase leading-[1.05] tracking-tight text-fg sm:text-4xl lg:text-[2.9rem]">
-          {isDashboard ? 'Business Overview' : 'Member Management'}
+          {heading.title}
         </h2>
 
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted sm:text-[15px]">
-          Welcome back, Administrator.{' '}
-          {isDashboard
-            ? 'Here is how your club is performing today.'
-            : 'Manage your roster, plans and trainer assignments.'}
+          {heading.description}
         </p>
       </div>
 

@@ -6,6 +6,7 @@ import { generatePredictiveData } from './utils/analytics';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import DashboardView from './components/DashboardView';
+import OverviewView from './components/OverviewView';
 import MembersView from './components/MembersView';
 import MemberModal from './components/MemberModal';
 
@@ -317,6 +318,8 @@ const App = () => {
               </p>
             </div>
           )}
+
+          {activeTab === 'overview' && <OverviewView />}
 
           {activeTab === 'dashboard' && (
             <DashboardView 

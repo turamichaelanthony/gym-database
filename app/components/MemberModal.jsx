@@ -173,8 +173,8 @@ const MemberModal = ({
                   }
                 >
                   <option value="None">None</option>
-                  <option value=""></option>
-                  <option value=""></option>
+                  <option value="Early Seven Tajanlangit">Early Seven Tajanlangit</option>
+                  <option value="Gab Pogoy">Gab Pogoy</option>
                   <option value=""></option>
                 </select>
                 <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-faint" />

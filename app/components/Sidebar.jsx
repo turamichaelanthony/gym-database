@@ -1,9 +1,10 @@
 import React from 'react';
-import { BarChart3, Users, Dumbbell } from 'lucide-react';
+import { BarChart3, BookOpen, Users, Dumbbell } from 'lucide-react';
 
 const navItems = [
-  { id: 'dashboard', label: 'Dashboard', hint: 'Overview', icon: BarChart3 },
+  { id: 'dashboard', label: 'Dashboard', hint: 'Analytics', icon: BarChart3 },
   { id: 'members', label: 'Members', hint: 'Directory', icon: Users },
+  { id: 'overview', label: 'Overview', hint: 'System Guide', icon: BookOpen },
 ];
 
 const Brand = ({ compact = false }) => (
@@ -68,7 +69,7 @@ const Sidebar = ({ activeTab, setActiveTab, serverError, dataSource }) => {
                 }`}
               >
                 <Icon size={15} strokeWidth={2.4} />
-                {label}
+                <span className="hidden sm:inline">{label}</span>
               </button>
             );
           })}
